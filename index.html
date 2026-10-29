@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Affiliate AI Studio — Free Affiliate Reel Maker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#0b0d12;color:#f5f7fb}
+.wrap{max-width:760px;margin:auto;padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 4px}.brand{display:flex;align-items:center;gap:10px}.brand b{display:block;font-size:15px}.brand small{display:block;color:#8993a5;font-size:11px;margin-top:2px}.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;background:linear-gradient(135deg,#fff,#aeb8ff);color:#111}.badge{font-size:11px;font-weight:900;padding:6px 9px;border-radius:999px;background:#202734;color:#dbe2ff;border:1px solid #35405a}.hero{padding:18px 0 8px}.hero h1{margin:0;font-size:30px}.hero p{color:#aab2c0;margin:7px 0 0}
+.card{background:linear-gradient(180deg,#171b25,#131720);border:1px solid #292f3b;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 30px rgba(0,0,0,.16)}
+label{display:block;font-weight:700;margin:12px 0 7px}input,select,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #353d4b;background:#0e1117;color:#fff;font-size:15px}
+textarea{min-height:105px;resize:vertical}.drop{border:1px dashed #566174;border-radius:14px;padding:20px;text-align:center;color:#aab2c0;background:#10141c}.drop input{margin-top:10px}.tip{font-size:12px;color:#7f8a9d;margin-top:8px}
+img{max-width:100%;max-height:260px;display:block;margin:12px auto;border-radius:14px}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:800;cursor:pointer;background:#fff;color:#111;margin-top:12px}.primary{width:100%;font-size:16px}.secondary{background:#272e3b;color:#fff;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.out{white-space:pre-wrap;line-height:1.5;color:#e8ebf2}.muted{color:#9ba5b5;font-size:13px}.hidden{display:none}.status{padding:10px;border-radius:10px;background:#10151e;color:#b9c3d2;margin-top:10px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.wrap{padding:15px}.hero h1{font-size:26px}}.footer{text-align:center;color:#6f798a;font-size:11px;padding:18px 0 28px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="logo">AI</span><div><b>Affiliate AI Studio</b><small>Free Reel Content Maker</small></div></div>
+    <span class="badge">FREE</span>
+  </div>
+  <div class="hero">
+    <h1>🔥 Affiliate AI Studio</h1>
+    <p>Product photo → Hook → Reel prompt → Hindi voice → Caption → CTA → Hashtags</p>
+  </div>
+
+  <div class="card">
+    <label>1. Product image</label>
+    <div class="drop">📸 Product photo upload karo<br><span class="tip">Clear product photo = better AI result</span><br><input id="file" type="file" accept="image/*"></div>
+    <img id="preview" class="hidden">
+    <div class="grid">
+      <div><label>Product name (optional)</label><input id="name" placeholder="e.g. Crystal Deer Lamp"></div>
+      <div><label>Video duration</label><select id="duration"><option>10 sec</option><option>15 sec</option><option>20 sec</option></select></div>
+    </div>
+    <label>Product/Affiliate link (optional)</label>
+    <input id="link" placeholder="https://...">
+  </div>
+
+  <div class="card">
+    <label>AI mode</label>
+    <select id="mode">
+      <option value="demo">Free Demo — no API key</option>
+      <option value="gemini">Gemini API — use your own key</option>
+    </select>
+    <div id="keyBox" class="hidden">
+      <label>Gemini API key</label>
+      <input id="key" type="password" placeholder="Paste your Gemini API key">
+      <div class="muted">Key is kept only in this browser session and is sent directly to Google. Isse chat mein mat bhejna.</div>
+    </div>
+    <button class="primary" onclick="generate()">🚀 Generate My Reel Content</button><div class="tip">Demo mode 100% free • Gemini mode uses your own API key</div>
+    <div id="status" class="status hidden"></div>
+  </div>
+
+  <div id="results"></div>
+  <div class="footer">Made for Indian affiliate creators • 9:16 • Hindi/Hinglish • Meta Edits ready</div>
+</div>
+
+<script>
+const fileEl=document.getElementById('file'), preview=document.getElementById('preview');
+fileEl.addEventListener('change',()=>{const f=fileEl.files[0]; if(!f)return; preview.src=URL.createObjectURL(f); preview.classList.remove('hidden')});
+document.getElementById('mode').addEventListener('change',e=>document.getElementById('keyBox').classList.toggle('hidden',e.target.value!=='gemini'));
+
+function setStatus(t){const s=document.getElementById('status');s.textContent=t;s.classList.remove('hidden')}
+function esc(s){return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function box(title,text){return `<div class="card"><h3>${esc(title)}</h3><div class="out" id="o-${title.replace(/\\W/g,'')}">${esc(text)}</div><button class="secondary" onclick="copyText(this)">📋 Copy</button></div>`}
+async function copyText(btn){const t=btn.parentElement.querySelector('.out').innerText;await navigator.clipboard.writeText(t);btn.textContent='✅ Copied';setTimeout(()=>btn.textContent='📋 Copy',1200)}
+
+function demo(name,dur){
+ const p=name||'ye product';
+ return {
+ hook:`ROOM KO AESTHETIC BANANA HAI? 😍✨ ${p} dekho!`,
+ voice:`Agar aap ${p} se apna setup stylish banana chahte ho, ye option kaafi interesting hai. Look premium hai aur Reel mein instantly attention grab karta hai. Link chahiye to COMMENT LINK 👇`,
+ prompt:`Create a ${dur}, vertical 9:16 realistic Indian social-media product Reel using the uploaded product image as the exact product reference. Keep the product shape, colors and details consistent. Start with a strong 1-second visual hook, then show a close-up product reveal, a realistic lifestyle setup, a slow cinematic movement, and a final CTA frame. Natural Indian home environment, realistic lighting, premium commercial look, no extra text except the final CTA. Hindi voice only. CTA: "COMMENT LINK".`,
+ caption:`✨ ${p} — simple, stylish aur attention-grabbing!\n\nAapko kaisa laga? 😍\nLINK chahiye to COMMENT "LINK" 👇\n\n#affiliate #amazonfinds #productreels #reelsindia #viralreels #shoppingfinds #trendingproducts`,
+ cta:`COMMENT "LINK" 👇`,
+ angle:`Problem → visual transformation → premium feel → easy CTA`
+ };
+}
+
+async function fileBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file)})}
+
+async function generate(){
+ const f=fileEl.files[0], name=document.getElementById('name').value.trim(), dur=document.getElementById('duration').value;
+ if(!f){alert('Pehle product image select karo.');return}
+ setStatus('Generating…');
+ try{
+  let d;
+  if(document.getElementById('mode').value==='gemini'){
+    const key=document.getElementById('key').value.trim(); if(!key){alert('Gemini API key paste karo.');return}
+    const b64=await fileBase64(f);
+    const prompt=`You are an expert Indian affiliate-Reels creator. Analyze the uploaded product image and return ONLY valid JSON with keys: hook, voice, prompt, caption, cta, angle. Make everything in simple Hinglish/Hindi for an Indian audience. Duration ${dur}. The video prompt must be 9:16, realistic, preserve the exact product, include a strong first-second hook and final CTA "COMMENT LINK". Voice should be short enough for ${dur}. Caption should include a clear CTA and relevant hashtags. Product name if known: ${name||'not provided'}.`;
+    const body={contents:[{parts:[{text:prompt},{inline_data:{mime_type:f.type,data:b64}}]}]};
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+    const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||'Gemini request failed');
+    const txt=j.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('')||'';
+    d=JSON.parse(txt.replace(/^```json\\s*/,'').replace(/\\s*```$/,''));
+  }else d=demo(name,dur);
+  document.getElementById('results').innerHTML=
+    box('🔥 Hook',d.hook)+box('🎙️ Hindi Voice',d.voice)+box('🎬 AI Video Prompt',d.prompt)+box('📝 Instagram Caption',d.caption)+box('👇 CTA',d.cta)+box('💰 Selling Angle',d.angle)+box('⚙️ Meta Edits Export Settings','1080p HD • 9:16 • Original 24 FPS • SDR • High-quality MP4');
+  setStatus('✅ Done');
+ }catch(e){setStatus('❌ '+e.message+' — Demo Free mode try karo.')}
+}
+</script>
+</body>
+</html>
